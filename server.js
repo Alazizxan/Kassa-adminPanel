@@ -3,9 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const PaymentAPIClient = require('./SpinPay');
+const config = require('./config');
 
 // Connect to MongoDB
-mongoose.connect(DATABASE.URI, {
+mongoose.connect(config.DATABASE.URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -51,24 +52,39 @@ const Transaction = mongoose.model('Transaction', TransactionSchema);
 // Get transactions by Game ID
 app.get('/api/transactions/game/:gameId', async (req, res) => {
   try {
-    const gameId = req.params.gameId;
-    const transactions = await Transaction.find({ gameId });
+    const userId = req.params.gameId;
+    const transactions = await Transaction.find({ userId });
+    const telegramId = transactions[0].telegramId;
+
+    // Foydalanuvchini topish
+    const user = await User.findOne({ telegramId });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found for the given telegramId' });
+    }
 
     const totals = transactions.reduce((acc, transaction) => {
+      // Miqdorni musbat qilib olish va null bo'lsa 0 ga aylantirish
+      const amount = Math.abs(transaction.amount || 0);
+
+
+
       if (transaction.type === 'deposit') {
-        acc.totalDeposit += transaction.amount;
+        acc.totalDeposit += amount;
       } else if (transaction.type === 'withdrawal') {
-        acc.totalWithdrawal += transaction.amount;
+        acc.totalWithdrawal += amount;
       }
       return acc;
     }, { totalDeposit: 0, totalWithdrawal: 0 });
 
-    res.json({ transactions, totals });
+    res.json({ transactions, totals,user });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error fetching transactions');
   }
 });
+
+
 
 // Get user details by Telegram ID
 app.get('/api/user/:telegramId', async (req, res) => {

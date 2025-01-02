@@ -1,0 +1,235 @@
+
+request get /api/transactions/game/:gameId
+
+response = {
+    "transactions": [{
+        "_id": "676d093de0c0a41e41b72cf0",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "amount": -11500,
+        "operationId": "4164977329",
+        "timestamp": "2024-12-26T07:43:57.768Z",
+        "__v": 0
+    }, {
+        "_id": "676d419d27209c45d36c1bc5",
+        "userId": "1100041625",
+        "telegramId": "7465707954",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "amount": -15000,
+        "operationId": "4165957695",
+        "timestamp": "2024-12-26T11:44:29.906Z",
+        "__v": 0
+    }, {
+        "_id": "676d7fb0774ebb6c9be92812",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "deposit",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "expiryDate": "0127",
+        "amount": 13000,
+        "status": "success",
+        "paymentId": "3764019429",
+        "error": null,
+        "timestamp": "2024-12-26T16:09:20.376Z",
+        "__v": 0
+    }, {
+        "_id": "676d81b2774ebb6c9be92818",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "amount": -12000,
+        "operationId": "4167893811",
+        "timestamp": "2024-12-26T16:17:54.653Z",
+        "__v": 0
+    }],
+    "totals": {
+        "totalDeposit": 13000,
+        "totalWithdrawal": 38500
+    },
+    "user": {
+        "_id": "676d269dc230df0e2fdabaa1",
+        "telegramId": "1240622071",
+        "refferalId": null,
+        "username": "Prostomilyarder",
+        "fullName": "Bahodir Jumayev🐾",
+        "registrationDate": "2024-12-26T09:49:17.196Z",
+        "lastActive": "2024-12-27T06:59:34.203Z",
+        "isActive": true,
+        "isAdmin": false,
+        "__v": 0,
+        "phone": "998332880702"
+    }
+}
+request get /api/user/:telegramId
+
+example response = {
+    "user": {
+        "_id": "676d1854d9169223e465eabe",
+        "telegramId": "6414918275",
+        "refferalId": "7465707954",
+        "username": "Decoder_Mind",
+        "fullName": "No NaMe",
+        "registrationDate": "2024-12-26T08:48:20.950Z",
+        "lastActive": "2024-12-26T10:11:52.293Z",
+        "isActive": true,
+        "isAdmin": false,
+        "__v": 0,
+        "phone": "+998943283639"
+    },
+    "transactions": []
+}
+
+
+request get  /api/transactions/month-total?year=2024&month=12
+
+
+example response = {
+    "totals": {
+        "totalDeposit": 13000,
+        "totalWithdrawal": null
+    },
+    "transactions": [{
+        "_id": "676d093de0c0a41e41b72cf0",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "amount": -11500,
+        "operationId": "4164977329",
+        "timestamp": "2024-12-26T07:43:57.768Z",
+        "__v": 0
+    }, {
+        "_id": "676d34e3f100629b564d193e",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "timestamp": "2024-12-26T10:50:11.135Z",
+        "__v": 0
+    }, {
+        "_id": "676d419d27209c45d36c1bc5",
+        "userId": "1100041625",
+        "telegramId": "7465707954",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "amount": -15000,
+        "operationId": "4165957695",
+        "timestamp": "2024-12-26T11:44:29.906Z",
+        "__v": 0
+    }, {
+        "_id": "676d7fb0774ebb6c9be92812",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "deposit",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "expiryDate": "0127",
+        "amount": 13000,
+        "status": "success",
+        "paymentId": "3764019429",
+        "error": null,
+        "timestamp": "2024-12-26T16:09:20.376Z",
+        "__v": 0
+    }, {
+        "_id": "676d81b2774ebb6c9be92818",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "amount": -12000,
+        "operationId": "4167893811",
+        "timestamp": "2024-12-26T16:17:54.653Z",
+        "__v": 0
+    }, {
+        "_id": "676e52c30a93c277aea6da94",
+        "userId": "1100041625",
+        "telegramId": "1240622071",
+        "type": "withdrawal",
+        "platform": "spinbetter",
+        "cardNumber": "9860600409109235",
+        "timestamp": "2024-12-27T07:09:55.896Z",
+        "__v": 0
+    }]
+}
+
+/api/transaction-totals
+
+
+
+
+
+app.post('/api/transactions/payout', async (req, res) => {
+    const { userId, amount} = req.body;
+  
+    try {
+      const client = new PaymentAPIClient();
+      const response = await client.payout(userId, amount);
+  
+      if (response.success) {
+        const transaction = new Transaction({
+          userId,
+          type: 'withdrawal',
+          platform: 'spinbetter',
+          gameId: userId,
+          cardNumber: '',
+          expiryDate:'',
+          amount,
+          status: 'completed',
+          operationId: response.operationId,
+        });
+        await transaction.save();
+        res.json({ success: true, transaction });
+      } else {
+        res.status(400).json({ success: false, message: response.Message });
+        
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error processing payout');
+    }
+  });
+
+  app.post('/api/transactions/deposit', async (req, res) => {
+    const { userId, amount} = req.body;
+  
+    try {
+      const client = new PaymentAPIClient();
+      const response = await client.deposit(userId, amount);
+      
+  
+  
+      if (response.success) {
+        const transaction = new Transaction({
+          userId,
+          type: 'deposit',
+          platform: 'spinbetter',
+          gameId: userId,
+          cardNumber: '',
+          expiryDate:'',
+          amount,
+          status: 'completed',
+          operationId: response.operationId,
+        });
+        await transaction.save();
+        res.json({ success: true, transaction });
+      } else {
+        res.status(400).json({ success: false, message: response.Message });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error processing deposit');
+    }
+  });
+  
