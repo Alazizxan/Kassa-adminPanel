@@ -1,34 +1,37 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './pages/Dashboard';
-import { Users } from './pages/Users';
-import { Transactions } from './pages/Transactions';
-import { MobileHeader } from './components/MobileHeader';
+import { ThemeProvider } from '@/components/theme-provider';
+import Navbar from '@/components/Navbar';
+import Dashboard from '@/pages/Dashboard';
+import Transactions from '@/pages/Transactions';
+import AllTransactions from '@/pages/AllTransactions';
+import Users from '@/pages/Users';
+import AllUsers from '@/pages/AllUsers';
+import Deposit from '@/pages/Deposit';
+import Withdrawal from '@/pages/Withdrawal';
+import { Toaster } from '@/components/ui/sonner';
 
-const App = () => {
+function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-900 text-gray-100">
-        {/* Mobile Header - Only visible on mobile */}
-        <MobileHeader />
-        
-        {/* Sidebar - Hidden on mobile */}
-        <div className="hidden md:block">
-          <Sidebar />
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Router>
+        <div className="min-h-screen bg-background">
+          <Navbar />
+          <main className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/all-transactions" element={<AllTransactions />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/all-users" element={<AllUsers />} />
+              <Route path="/deposit" element={<Deposit />} />
+              <Route path="/withdrawal" element={<Withdrawal />} />
+            </Routes>
+          </main>
+          <Toaster />
         </div>
-        
-        {/* Main Content - Full width on mobile, adjusted margin on desktop */}
-        <div className="w-full md:ml-64 min-h-screen pt-16 md:pt-0">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/transactions" element={<Transactions />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
-};
+}
 
 export default App;

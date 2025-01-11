@@ -1,54 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export default function Transactions() {
-  const [searchType, setSearchType] = useState('operationId');
-  const [searchTerm, setSearchTerm] = useState('');
+export default function AllTransactions() {
   const [transactions, setTransactions] = useState([]);
+  const [platform, setPlatform] = useState('all');
 
-  const handleSearch = () => {
-    const queryParam = searchType === 'operationId' ? 'operationId' : 'paymentId';
-    fetch(`http://localhost:3000/transactions/search?${queryParam}=${searchTerm}`)
+  useEffect(() => {
+    // Fetch all transactions for the current month
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    
+    fetch(`http://localhost:3000/api/transactions/month-total?year=${year}&month=${month}`)
       .then(res => res.json())
-      .then(data => setTransactions(data.data || []));
-  };
+      .then(data => setTransactions(data.transactions || []));
+  }, []);
+
+  const filteredTransactions = platform === 'all'
+    ? transactions
+    : transactions.filter((t: any) => t.platform.toLowerCase() === platform.toLowerCase());
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Transactions</h1>
-        <div className="flex space-x-2">
-          <Select
-            value={searchType}
-            onValueChange={setSearchType}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Search by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="operationId">Operation ID</SelectItem>
-              <SelectItem value="paymentId">Payment ID</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            placeholder={`Search by ${searchType === 'operationId' ? 'Operation ID' : 'Payment ID'}`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
-          />
-          <Button onClick={handleSearch}>
-            <Search className="h-4 w-4 mr-2" />
-            Search
-          </Button>
-        </div>
+        <h1 className="text-3xl font-bold">All Transactions</h1>
+        <Select
+          value={platform}
+          onValueChange={setPlatform}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by platform" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Platforms</SelectItem>
+            <SelectItem value="spinbetter">Spinbetter</SelectItem>
+            <SelectItem value="jvspinbet">JVSpinbet</SelectItem>
+            <SelectItem value="probet">Probet</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-4">
-        {transactions.map((transaction: any) => (
+        {filteredTransactions.map((transaction: any) => (
           <Card key={transaction._id}>
             <CardHeader>
               <CardTitle className="text-lg">
@@ -87,7 +81,8 @@ export default function Transactions() {
                 <div>
                   <p className="text-sm text-muted-foreground">Date</p>
                   <p className="text-lg font-semibold">
-                    {new Date(transaction.timestamp).toLocaleDateString()}
+                    {new Date(transaction.timestamp).toLocaleDateString()}{" "}
+                    {new Date(transaction.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
                 {transaction.status && (
