@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { User, Transaction, TransactionResponse } from '../types';
+import { User, Transaction, TransactionResponse, TransactionTotals } from '../types';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -51,11 +51,11 @@ export const getMonthlyTransactions = async (year: number, month: number): Promi
   }
 };
 
-export const getTransactionsTotal = async (): Promise<TransactionResponse> => {
+export const getTransactionsTotal = async (): Promise<TransactionTotals> => {
   try {
     const response = await api.get(`/api/transaction-totals`);
     return response.data;
   } catch (error) {
-    throw new Error('Failed to fetch game transactions');
+    throw new Error('Failed to fetch total transactions');
   }
 };

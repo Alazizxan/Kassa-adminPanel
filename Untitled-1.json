@@ -1,13 +1,14 @@
 
 request get /api/transactions/game/:gameId
 
+
 response = {
     "transactions": [{
         "_id": "676d093de0c0a41e41b72cf0",
         "userId": "1100041625",
         "telegramId": "1240622071",
         "type": "withdrawal",
-        "platform": "spinbetter",
+        "platform": "jvspinbetter",
         "cardNumber": "9860600409109235",
         "amount": -11500,
         "operationId": "4164977329",
@@ -164,72 +165,123 @@ example response = {
     }]
 }
 
-/api/transaction-totals
+request /api/transaction-totals
 
 
+example responce = {"totalDeposit":85000,"totalWithdrawal":-71200}
 
+request get /transactions/search?operationId=4218796009 operatinId else paymentId 
 
+response= {
+  "success": true,
+  "message": "Tranzaksiyalar topildi",
+  "data": [{
+      "_id": "677a969537aebb8adf53905f",
+      "userId": "1103896577",
+      "telegramId": "1240622071",
+      "phone": "998332880702",
+      "type": "withdrawal",
+      "platform": "JVSPINBET",
+      "cardNumber": "9860600409109235",
+      "amount": -20700,
+      "operationId": "4218796009",
+      "timestamp": "2025-01-05T14:26:29.928Z",
+      "__v": 0
+  }]
+}
 
+app.post('/api/transactions/deposit', async (req, res) => {
+  const { userId, amount, platform } = req.body;
+
+  try {
+    let client;
+
+    // Platformga qarab mos client tanlanadi
+    switch (platform) {
+      case 'spinbetter':
+        client = new PaymentAPIClient();
+        break;
+      case 'jvspinbet':
+        client = new jvspinClient();
+        break;
+      case 'probet':
+        client = new probetClient();
+        break;
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid platform' });
+    }
+
+    const response = await client.deposit(userId, amount);
+
+    if (response.success) {
+      const transaction = new Transaction({
+        userId,
+        type: 'deposit',
+        platform,
+        gameId: userId,
+        cardNumber: '',
+        expiryDate: '',
+        amount,
+        status: 'completed',
+        operationId: response.operationId,
+      });
+      await transaction.save();
+      res.json({ success: true, transaction });
+    } else {
+      res.status(400).json({ success: false, message: response.Message });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error processing deposit');
+  }
+});
+
+// Payout route
 app.post('/api/transactions/payout', async (req, res) => {
-    const { userId, amount} = req.body;
-  
-    try {
-      const client = new PaymentAPIClient();
-      const response = await client.payout(userId, amount);
-  
-      if (response.success) {
-        const transaction = new Transaction({
-          userId,
-          type: 'withdrawal',
-          platform: 'spinbetter',
-          gameId: userId,
-          cardNumber: '',
-          expiryDate:'',
-          amount,
-          status: 'completed',
-          operationId: response.operationId,
-        });
-        await transaction.save();
-        res.json({ success: true, transaction });
-      } else {
-        res.status(400).json({ success: false, message: response.Message });
-        
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error processing payout');
-    }
-  });
+  const { userId, amount, platform } = req.body;
 
-  app.post('/api/transactions/deposit', async (req, res) => {
-    const { userId, amount} = req.body;
-  
-    try {
-      const client = new PaymentAPIClient();
-      const response = await client.deposit(userId, amount);
-      
-  
-  
-      if (response.success) {
-        const transaction = new Transaction({
-          userId,
-          type: 'deposit',
-          platform: 'spinbetter',
-          gameId: userId,
-          cardNumber: '',
-          expiryDate:'',
-          amount,
-          status: 'completed',
-          operationId: response.operationId,
-        });
-        await transaction.save();
-        res.json({ success: true, transaction });
-      } else {
-        res.status(400).json({ success: false, message: response.Message });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error processing deposit');
+  try {
+    let client;
+
+    // Platformga qarab mos client tanlanadi
+    switch (platform) {
+      case 'spinbetter':
+        client = new spinClient();
+        break;
+      case 'jvspinbet':
+        client = new jvspinClient();
+        break;
+      case 'probet':
+        client = new probetClient();
+        break;
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid platform' });
     }
-  });
+
+    const response = await client.payout(userId, amount);
+
+    if (response.success) {
+      const transaction = new Transaction({
+        userId,
+        type: 'withdrawal',
+        platform,
+        gameId: userId,
+        cardNumber: 'admin',
+        expiryDate: '',
+        amount,
+        status: 'completed',
+        operationId: response.operationId,
+      });
+      await transaction.save();
+      res.json({ success: true, transaction });
+    } else {
+      res.status(400).json({ success: false, message: response.Message });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error processing payout');
+  }
+});
+
+
   

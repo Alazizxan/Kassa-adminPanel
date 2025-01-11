@@ -17,7 +17,7 @@ export const Dashboard = () => {
   if (error) return <ErrorFallback error={error} resetErrorBoundary={() => window.location.reload()} />;
   if (!data) return null;
 
-  const { transactions, totals } = data;
+  const  totals  = data;
 
   return (
     <div className="p-6">

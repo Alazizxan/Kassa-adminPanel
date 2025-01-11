@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const PaymentAPIClient = require('./SpinPay');
 const config = require('./config');
+const jvspinClient = require('./jvspinbetpay');
+const probetClient = require('./1probet-pay');
 
 // Connect to MongoDB
 mongoose.connect(config.DATABASE.URI, {
@@ -169,22 +171,36 @@ app.get('/api/transactions/month-total', async (req, res) => {
 
 // Deposit route
 app.post('/api/transactions/deposit', async (req, res) => {
-  const { userId, amount} = req.body;
+  const { userId, amount, platform } = req.body;
 
   try {
-    const client = new PaymentAPIClient();
-    const response = await client.deposit(userId, amount);
-    
+    let client;
 
+    // Platformga qarab mos client tanlanadi
+    switch (platform) {
+      case 'spinbetter':
+        client = new PaymentAPIClient();
+        break;
+      case 'jvspinbet':
+        client = new jvspinClient();
+        break;
+      case 'probet':
+        client = new probetClient();
+        break;
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid platform' });
+    }
+
+    const response = await client.deposit(userId, amount);
 
     if (response.success) {
       const transaction = new Transaction({
         userId,
         type: 'deposit',
-        platform: 'spinbetter',
+        platform,
         gameId: userId,
         cardNumber: '',
-        expiryDate:'',
+        expiryDate: '',
         amount,
         status: 'completed',
         operationId: response.operationId,
@@ -202,20 +218,36 @@ app.post('/api/transactions/deposit', async (req, res) => {
 
 // Payout route
 app.post('/api/transactions/payout', async (req, res) => {
-  const { userId, amount} = req.body;
+  const { userId, amount, platform } = req.body;
 
   try {
-    const client = new PaymentAPIClient();
+    let client;
+
+    // Platformga qarab mos client tanlanadi
+    switch (platform) {
+      case 'spinbetter':
+        client = new PaymentAPIClient();
+        break;
+      case 'jvspinbet':
+        client = new jvspinClient();
+        break;
+      case 'probet':
+        client = new probetClient();
+        break;
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid platform' });
+    }
+
     const response = await client.payout(userId, amount);
 
     if (response.success) {
       const transaction = new Transaction({
         userId,
         type: 'withdrawal',
-        platform: 'spinbetter',
+        platform,
         gameId: userId,
-        cardNumber: '',
-        expiryDate:'',
+        cardNumber: 'admin',
+        expiryDate: '',
         amount,
         status: 'completed',
         operationId: response.operationId,
@@ -224,13 +256,82 @@ app.post('/api/transactions/payout', async (req, res) => {
       res.json({ success: true, transaction });
     } else {
       res.status(400).json({ success: false, message: response.Message });
-      
     }
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing payout');
   }
 });
+
+
+app.get('/api/users', async (req, res) => {
+  try {
+    // Barcha foydalanuvchilarni bazadan olish
+    const users = await User.find({});
+    
+    // JSON formatida qaytarish
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching users');
+  }
+});
+
+
+
+
+const findTransactionById = async (paymentId, operationId) => {
+  try {
+    // Qidirish mezonini shakllantirish
+    const query = {};
+    if (paymentId) {
+      query.paymentId = paymentId;
+    }
+    if (operationId) {
+      query.operationId = operationId;
+    }
+
+    // Tranzaksiyalarni qidirish
+    const transactions = await Transaction.find(query);
+
+    // Agar tranzaksiyalar topilsa
+    if (transactions.length > 0) {
+      return {
+        success: true,
+        message: 'Tranzaksiyalar topildi',
+        data: transactions,
+      };
+    }
+
+    // Agar hech narsa topilmasa
+    return {
+      success: false,
+      message: 'Tranzaksiyalar topilmadi',
+    };
+  } catch (error) {
+    // Xato yuzaga kelsa
+    return {
+      success: false,
+      message: 'Xatolik yuz berdi',
+      error: error.message,
+    };
+  }
+};
+
+// PaymentID yoki OperationID orqali tranzaksiyalarni qidirish endpointi
+app.get('/transactions/search', async (req, res) => {
+  const { paymentId, operationId } = req.query;
+
+  const result = await findTransactionById(paymentId, operationId);
+
+  if (result.success) {
+    res.status(200).json(result);
+  } else {
+    res.status(404).json(result);
+  }
+});
+
+
 
 
 
